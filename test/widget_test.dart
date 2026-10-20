@@ -1,30 +1,114 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
+import 'package:bg_app/data/game.dart';
+import 'package:bg_app/components/game_form_widget.dart';
+import 'package:bg_app/components/game_list.dart';
+import 'package:bg_app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:bg_app/main.dart';
-
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  group('Game', () {
+    test('creates with required fields', () {
+      final game = Game(gameName: 'Clank', won: true);
+      expect(game.gameName, 'Clank');
+      expect(game.won, true);
+      expect(game.id, isNotEmpty);
+      expect(game.playedAt, isA<DateTime>());
+    });
+  });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+  group('GameFormWidget', () {
+    testWidgets('shows form fields', (tester) async {
+      Game? created;
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: GameFormWidget(onGameCreated: (g) => created = g),
+        ),
+      ));
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+      expect(find.text('Add New Game Session'), findsOneWidget);
+      expect(find.text('Game Name'), findsOneWidget);
+      expect(find.text('Won'), findsOneWidget);
+      expect(find.text('Lost'), findsOneWidget);
+    });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    testWidgets('adds game with name and won result', (tester) async {
+      Game? created;
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: GameFormWidget(onGameCreated: (g) => created = g),
+        ),
+      ));
+
+      await tester.enterText(find.byType(TextField), 'Clank');
+      await tester.tap(find.text('Add Session'));
+      await tester.pump();
+
+      expect(created?.gameName, 'Clank');
+      expect(created?.won, true);
+    });
+
+    testWidgets('adds game with lost result', (tester) async {
+      Game? created;
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: GameFormWidget(onGameCreated: (g) => created = g),
+        ),
+      ));
+
+      await tester.enterText(find.byType(TextField), 'Fort');
+      await tester.tap(find.text('Lost'));
+      await tester.tap(find.text('Add Session'));
+      await tester.pump();
+
+      expect(created?.won, false);
+    });
+
+    testWidgets('shows error on empty name', (tester) async {
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: GameFormWidget(onGameCreated: (_) {}),
+        ),
+      ));
+
+      await tester.tap(find.text('Add Session'));
+      await tester.pump();
+
+      expect(find.text('Game name cannot be empty.'), findsOneWidget);
+    });
+  });
+
+  group('GameList', () {
+    testWidgets('shows empty state', (tester) async {
+      await tester.pumpWidget(const MaterialApp(home: GameList()));
+      expect(find.text('No games played yet.\nTap + to add your first game!'),
+          findsOneWidget);
+    });
+
+    testWidgets('opens form on FAB tap', (tester) async {
+      await tester.pumpWidget(const MaterialApp(home: GameList()));
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(GameFormWidget), findsOneWidget);
+    });
+
+    testWidgets('adds game to list', (tester) async {
+      await tester.pumpWidget(const MaterialApp(home: GameList()));
+
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'Clank');
+      await tester.tap(find.text('Add Session'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Clank'), findsOneWidget);
+      expect(find.text('Won'), findsOneWidget);
+    });
+  });
+
+  testWidgets('app runs', (tester) async {
+    await tester.pumpWidget(const BGApp());
+    expect(find.text('Board Game Tracker'), findsOneWidget);
   });
 }

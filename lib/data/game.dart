@@ -1,5 +1,14 @@
 class Game {
-  String gameName;
+  final String id;
+  final String gameName;
+  final DateTime playedAt;
+  final bool won;
 
-  Game({required this.gameName});
+  Game({
+    String? id,
+    required this.gameName,
+    DateTime? playedAt,
+    required this.won,
+  })  : id = id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+        playedAt = playedAt ?? DateTime.now();
 }

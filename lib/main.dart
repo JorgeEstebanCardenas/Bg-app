@@ -1,17 +1,17 @@
+import 'package:bg_app/components/game_list.dart';
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const BGApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class BGApp extends StatelessWidget {
+  const BGApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Board Game Tracker',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
         useMaterial3: true,
